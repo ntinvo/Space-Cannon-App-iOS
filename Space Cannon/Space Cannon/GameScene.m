@@ -8,6 +8,7 @@
 
 #import "GameScene.h"
 #import "Menu.h"
+#import "Ball.h"
 
 @implementation GameScene
 {
@@ -20,6 +21,7 @@
     SKAction *soundExplosion;
     SKAction *soundLazer;
     SKAction *soundZap;
+    NSUserDefaults *user;
     Menu *menu;
     BOOL shot;
     BOOL gameOver;
@@ -35,6 +37,8 @@ static const uint32_t BALL_CATEGORY     = 0x1 << 1;
 static const uint32_t EDGE_CATEGORY     = 0x1 << 2;
 static const uint32_t SHIELD_CATEGORY   = 0x1 << 3;
 static const uint32_t BAR_CATEGORY      = 0x1 << 4;
+static NSString *const keyTopScore = @"TopScore";
+
 
 /* Helper method to convert radian to vector */
 static inline CGVector radiansToVector(CGFloat radians){
@@ -98,7 +102,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     /* Create halo action */
     SKAction *haloAction = [SKAction sequence:@[[SKAction waitForDuration: 2 withRange: 1],  /* This will wait an amount of time for the next halo to be spawned */
                                                 [SKAction performSelector:@selector(createHalo) onTarget:self]]]; /* Call createAction function to spawn the halos */
-    [self runAction: [SKAction repeatActionForever:haloAction]];
+    [self runAction: [SKAction repeatActionForever:haloAction] withKey:@"haloAction"];
     
     /* Ammos */
     ammoDisplay = [SKSpriteNode spriteNodeWithImageNamed:@"Ammo5"];
@@ -136,6 +140,10 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     self.score = 0;
     gameOver = YES;
     scoreDisplay.hidden = YES;
+    
+    /* Loading score */
+    user = [NSUserDefaults standardUserDefaults];
+    menu.highScore = [user integerForKey:keyTopScore];
 }
 
 
@@ -162,8 +170,9 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     menu.score = self.score;
     if (self.score > menu.highScore) {
         menu.highScore = self.score;
-        //[userDefault setInteger:self.score forKey:keyTopScore];
-        //[userDefault synchronize];
+        /* Save new high score */
+        [user setInteger:self.score forKey:keyTopScore];
+        [user synchronize];
     }
     gameOver = YES;
     scoreDisplay.hidden = YES;
@@ -179,6 +188,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     menu.hidden = YES;
     scoreDisplay.hidden = NO;
     [mainLayer removeAllChildren];
+    [self actionForKey:@"haloAction"].speed = 1.0;
     
     /* Shield */
     for (int i = 0; i < 10; i++) {
@@ -206,7 +216,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
 -(void)shoot {
     if (self.ammo > 0) {
         self.ammo--;
-        SKSpriteNode *ball = [SKSpriteNode spriteNodeWithImageNamed:@"Ball"];
+        Ball *ball = [Ball spriteNodeWithImageNamed:@"Ball"];
         ball.name = @"ball";
         CGVector rotationVector = radiansToVector(cannon.zRotation);
         ball.position = CGPointMake(cannon.position.x + cannon.size.width * 0.5 * rotationVector.dx,
@@ -223,12 +233,26 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         ball.physicsBody.contactTestBitMask = EDGE_CATEGORY;
         [self runAction:soundLazer];
         [mainLayer addChild:ball];
+        
+        /* Ball trailing */
+        NSString *trailPath = [[NSBundle mainBundle] pathForResource:@"BallTrail" ofType:@"sks"];
+        SKEmitterNode *trailBall = [NSKeyedUnarchiver unarchiveObjectWithFile:trailPath];
+        trailBall.targetNode = mainLayer;
+        [mainLayer addChild:trailBall];
+        ball.trail = trailBall;
     }
 }
 
 
 /* Creating the halos method */
 -(void)createHalo {
+    
+    /* Incresing the spawning of halos */
+    SKAction *spwnAction = [self actionForKey:@"haloAction"];
+    if (spwnAction.speed < 1.5) {
+        spwnAction.speed += 0.01;
+    }
+    
     SKSpriteNode *halo = [SKSpriteNode spriteNodeWithImageNamed:@"Halo"];
     halo.position = CGPointMake(randomGen(halo.size.width/2, self.size.width - halo.size.width/2),
                                 self.size.height + halo.size.height/2);
@@ -323,7 +347,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         [self addExplosion:first.node.position withName:@"HaloExplosion"];
         [self runAction:soundExplosion];
         
-        //first.categoryBitMask = 0;
+        first.categoryBitMask = 0;
         [first.node removeFromParent];
         [second.node removeFromParent];
     }
@@ -349,12 +373,15 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     /* Colision between the ball and the edges */
     if (first.categoryBitMask == BALL_CATEGORY && second.categoryBitMask == EDGE_CATEGORY) {
         [self addExplosion:contact.contactPoint withName:@"BounceExplosion"];
-        /*if ([first.node isKindOfClass:[Ball  class]]) {
+        
+        /* Check to make sure that is of class Ball
+        if bounces more than 4, remove it from frame */
+        if ([first.node isKindOfClass:[Ball  class]]) {
             ((Ball *)first.node).numBounces++;
             if (((Ball *)first.node).numBounces > 4) {
                 [first.node removeFromParent];
             }
-        }*/
+        }
         [self runAction:soundBounce];
     }
 }
@@ -366,12 +393,20 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         shot = NO;
     }
     
+    /* Remove the balls */
     [mainLayer enumerateChildNodesWithName:@"ball" usingBlock:^(SKNode *node, BOOL *stop) {
+        /* Go thru and update trail */
+        if ([node respondsToSelector:@selector(updateTrail)]) {
+            [node performSelector:@selector(updateTrail) withObject:nil afterDelay:0.0];
+        }
+
+        /* Remove if needed (out of frame) */
         if (!CGRectContainsPoint(self.frame, node.position)) {
             [node removeFromParent];
         }
     }];
     
+    /* Remove the halos */
     [mainLayer enumerateChildNodesWithName:@"halo" usingBlock:^(SKNode *node, BOOL *stop) {
         if(node.position.y + node.frame.size.height < 0) {
             [node removeFromParent];

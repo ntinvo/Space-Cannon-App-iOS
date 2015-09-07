@@ -29,6 +29,9 @@
 		4C04F6081B9D6D6300BA97DC /* SmallExplosion.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6071B9D6D6300BA97DC /* SmallExplosion.caf */; };
 		4C04F60A1B9D6D6F00BA97DC /* ZapSound.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6091B9D6D6F00BA97DC /* ZapSound.caf */; };
 		4C04F60D1B9D6ED700BA97DC /* Menu.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04F60C1B9D6ED700BA97DC /* Menu.m */; };
+		4C04F6131B9D785C00BA97DC /* BallTrail.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6111B9D785C00BA97DC /* BallTrail.sks */; };
+		4C04F6141B9D785C00BA97DC /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6121B9D785C00BA97DC /* spark.png */; };
+		4C04F6171B9D7AD100BA97DC /* Ball.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04F6161B9D7AD100BA97DC /* Ball.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +75,10 @@
 		4C04F6091B9D6D6F00BA97DC /* ZapSound.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = ZapSound.caf; sourceTree = "<group>"; };
 		4C04F60B1B9D6ED700BA97DC /* Menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Menu.h; sourceTree = "<group>"; };
 		4C04F60C1B9D6ED700BA97DC /* Menu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Menu.m; sourceTree = "<group>"; };
+		4C04F6111B9D785C00BA97DC /* BallTrail.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = BallTrail.sks; sourceTree = "<group>"; };
+		4C04F6121B9D785C00BA97DC /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
+		4C04F6151B9D7AD100BA97DC /* Ball.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ball.h; sourceTree = "<group>"; };
+		4C04F6161B9D7AD100BA97DC /* Ball.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Ball.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +107,8 @@
 				4C04F6051B9D6D5400BA97DC /* LZSound.caf */,
 				4C04F6031B9D6D3F00BA97DC /* Bounce.caf */,
 				4C04F6011B9D6D3200BA97DC /* BarExplosion.caf */,
+				4C04F6111B9D785C00BA97DC /* BallTrail.sks */,
+				4C04F6121B9D785C00BA97DC /* spark.png */,
 				4C04F5C71B9D4E0200BA97DC /* Space Cannon */,
 				4C04F5E61B9D4E0200BA97DC /* Space CannonTests */,
 				4C04F5C61B9D4E0200BA97DC /* Products */,
@@ -137,6 +146,8 @@
 				4C04F5FF1B9D684500BA97DC /* BounceExplosion.sks */,
 				4C04F60B1B9D6ED700BA97DC /* Menu.h */,
 				4C04F60C1B9D6ED700BA97DC /* Menu.m */,
+				4C04F6151B9D7AD100BA97DC /* Ball.h */,
+				4C04F6161B9D7AD100BA97DC /* Ball.m */,
 			);
 			path = "Space Cannon";
 			sourceTree = "<group>";
@@ -249,6 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C04F60A1B9D6D6F00BA97DC /* ZapSound.caf in Resources */,
+				4C04F6141B9D785C00BA97DC /* spark.png in Resources */,
 				4C04F6081B9D6D6300BA97DC /* SmallExplosion.caf in Resources */,
 				4C04F6061B9D6D5400BA97DC /* LZSound.caf in Resources */,
 				4C04F6041B9D6D3F00BA97DC /* Bounce.caf in Resources */,
@@ -260,6 +272,7 @@
 				4C04F5F81B9D608200BA97DC /* spark.png in Resources */,
 				4C04F5FA1B9D61A200BA97DC /* Halo@2x.png in Resources */,
 				4C04F6001B9D684500BA97DC /* BounceExplosion.sks in Resources */,
+				4C04F6131B9D785C00BA97DC /* BallTrail.sks in Resources */,
 				4C04F5D31B9D4E0200BA97DC /* GameScene.sks in Resources */,
 				4C04F5D91B9D4E0200BA97DC /* Main.storyboard in Resources */,
 				4C04F5F71B9D608200BA97DC /* HaloExplosion.sks in Resources */,
@@ -283,6 +296,7 @@
 			files = (
 				4C04F60D1B9D6ED700BA97DC /* Menu.m in Sources */,
 				4C04F5D61B9D4E0200BA97DC /* GameViewController.m in Sources */,
+				4C04F6171B9D7AD100BA97DC /* Ball.m in Sources */,
 				4C04F5CE1B9D4E0200BA97DC /* AppDelegate.m in Sources */,
 				4C04F5D11B9D4E0200BA97DC /* GameScene.m in Sources */,
 				4C04F5CB1B9D4E0200BA97DC /* main.m in Sources */,
