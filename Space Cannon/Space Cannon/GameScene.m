@@ -7,12 +7,23 @@
 //
 
 #import "GameScene.h"
+#import "Menu.h"
 
 @implementation GameScene
 {
     SKNode *mainLayer;
     SKSpriteNode *cannon;
+    SKSpriteNode *ammoDisplay;
+    SKLabelNode *scoreDisplay;
+    SKAction *soundBounce;
+    SKAction *soundDeepExplosion;
+    SKAction *soundExplosion;
+    SKAction *soundLazer;
+    SKAction *soundZap;
+    Menu *menu;
     BOOL shot;
+    BOOL gameOver;
+    
 }
 
 static const CGFloat SHOOT_SPEED = 1000.0f;
@@ -89,26 +100,130 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
                                                 [SKAction performSelector:@selector(createHalo) onTarget:self]]]; /* Call createAction function to spawn the halos */
     [self runAction: [SKAction repeatActionForever:haloAction]];
     
+    /* Ammos */
+    ammoDisplay = [SKSpriteNode spriteNodeWithImageNamed:@"Ammo5"];
+    ammoDisplay.anchorPoint = CGPointMake(0.5, 0.0);
+    ammoDisplay.position = cannon.position;
+    [self addChild:ammoDisplay];
+    
+    SKAction *ammoPlus = [SKAction sequence:@[[SKAction waitForDuration:1],
+                                              [SKAction runBlock:^{
+        self.ammo++;
+    }]]];
+    [self runAction:[SKAction repeatActionForever:ammoPlus]];
+    
+    /* Scoring */
+    scoreDisplay = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    scoreDisplay.position = CGPointMake(self.size.width / 4 + 15, 10);
+    scoreDisplay.horizontalAlignmentMode = SKLabelHorizontalAlignmentModeLeft;
+    scoreDisplay.fontSize = 20;
+    [self addChild:scoreDisplay];
+    
+    /* Initilize sounds */
+    soundBounce = [SKAction playSoundFileNamed:@"Bounce.caf" waitForCompletion:NO];
+    soundDeepExplosion = [SKAction playSoundFileNamed:@"BarExplosion.caf" waitForCompletion:NO];
+    soundExplosion = [SKAction playSoundFileNamed:@"SmallExplosion.caf" waitForCompletion:NO];
+    soundLazer = [SKAction playSoundFileNamed:@"LZSound.caf" waitForCompletion:NO];
+    soundZap = [SKAction playSoundFileNamed:@"ZapSound.caf" waitForCompletion:NO];
+    
+    /* Menu */
+    menu = [[Menu alloc] init];
+    [self addChild:menu];
+    menu.position = CGPointMake(20, self.size.height - 200);
+    
+    /* Init vals */
+    self.ammo = 5;
+    self.score = 0;
+    gameOver = YES;
+    scoreDisplay.hidden = YES;
+}
+
+
+/* Game Over! */
+-(void)gameOver {
+    /* Make the halos explode and remove them */
+    [mainLayer enumerateChildNodesWithName:@"halo" usingBlock:^(SKNode *node, BOOL *stop) {
+        [self addExplosion:node.position withName:@"HaloExplosion"];
+        [node removeFromParent];
+    }];
+    
+    /* Remove the balls */
+    [mainLayer enumerateChildNodesWithName:@"ball" usingBlock:^(SKNode *node, BOOL *stop) {
+        [node removeFromParent];
+    }];
+    
+    /* Remove the shield */
+    [mainLayer enumerateChildNodesWithName:@"shield" usingBlock:^(SKNode *node, BOOL *stop) {
+        [node removeFromParent];
+    }];
+    
+    menu.hidden = NO;
+    
+    menu.score = self.score;
+    if (self.score > menu.highScore) {
+        menu.highScore = self.score;
+        //[userDefault setInteger:self.score forKey:keyTopScore];
+        //[userDefault synchronize];
+    }
+    gameOver = YES;
+    scoreDisplay.hidden = YES;
+}
+
+/* New Game */
+-(void) newGame {
+    
+    /* Set up game */
+    self.ammo = 5;
+    self.score = 0;
+    gameOver = NO;
+    menu.hidden = YES;
+    scoreDisplay.hidden = NO;
+    [mainLayer removeAllChildren];
+    
+    /* Shield */
+    for (int i = 0; i < 10; i++) {
+        SKSpriteNode *shield = [SKSpriteNode spriteNodeWithImageNamed:@"Block"];
+        shield.position = CGPointMake(self.size.width / 4 + 32 + (50 * i), 90);
+        shield.name = @"shield";
+        [mainLayer addChild:shield];
+        shield.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(42, 9)];
+        shield.physicsBody.categoryBitMask = SHIELD_CATEGORY;
+        shield.physicsBody.collisionBitMask = 0;
+    }
+    
+    /* Life Bar */
+    SKSpriteNode *lifeBar = [SKSpriteNode spriteNodeWithImageNamed:@"BlueBar"];
+    lifeBar.position = CGPointMake(self.size.width / 2, 70);
+    lifeBar.xScale = 1.55;
+    lifeBar.physicsBody = [SKPhysicsBody bodyWithEdgeFromPoint:CGPointMake(-lifeBar.size.width/2, 0) toPoint:CGPointMake(lifeBar.size.width/2, 0)];
+    lifeBar.physicsBody.categoryBitMask = BAR_CATEGORY;
+    lifeBar.physicsBody.collisionBitMask = 0;
+    [mainLayer addChild:lifeBar];
+    
 }
 
 /* Shooting balls method */
 -(void)shoot {
-    SKSpriteNode *ball = [SKSpriteNode spriteNodeWithImageNamed:@"Ball"];
-    ball.name = @"ball";
-    CGVector rotationVector = radiansToVector(cannon.zRotation);
-    ball.position = CGPointMake(cannon.position.x + cannon.size.width * 0.5 * rotationVector.dx,
+    if (self.ammo > 0) {
+        self.ammo--;
+        SKSpriteNode *ball = [SKSpriteNode spriteNodeWithImageNamed:@"Ball"];
+        ball.name = @"ball";
+        CGVector rotationVector = radiansToVector(cannon.zRotation);
+        ball.position = CGPointMake(cannon.position.x + cannon.size.width * 0.5 * rotationVector.dx,
                                 cannon.position.y + cannon.size.width * 0.5 * rotationVector.dy);
     
-    ball.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:6.0];
-    ball.physicsBody.velocity = CGVectorMake(rotationVector.dx * SHOOT_SPEED, rotationVector.dy * SHOOT_SPEED);
-    ball.physicsBody.restitution = 1.0; /* Maintain momentum so that it will bounce off the edges */
-    ball.physicsBody.linearDamping = 0.0; /* Turn off air friction */
-    ball.physicsBody.friction = 0.0; /* Turn off friction */
-    ball.physicsBody.categoryBitMask = BALL_CATEGORY; /* Set the category bit mask */
-    ball.physicsBody.collisionBitMask = EDGE_CATEGORY; /* If the ball collides with another
-    // body that has a category bit mask that has the edge category set, then react to that */
-    ball.physicsBody.contactTestBitMask = EDGE_CATEGORY;
-    [mainLayer addChild:ball];
+        ball.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:6.0];
+        ball.physicsBody.velocity = CGVectorMake(rotationVector.dx * SHOOT_SPEED, rotationVector.dy * SHOOT_SPEED);
+        ball.physicsBody.restitution = 1.0; /* Maintain momentum so that it will bounce off the edges */
+        ball.physicsBody.linearDamping = 0.0; /* Turn off air friction */
+        ball.physicsBody.friction = 0.0; /* Turn off friction */
+        ball.physicsBody.categoryBitMask = BALL_CATEGORY; /* Set the category bit mask */
+        ball.physicsBody.collisionBitMask = EDGE_CATEGORY; /* If the ball collides with another
+        // body that has a category bit mask that has the edge category set, then react to that */
+        ball.physicsBody.contactTestBitMask = EDGE_CATEGORY;
+        [self runAction:soundLazer];
+        [mainLayer addChild:ball];
+    }
 }
 
 
@@ -155,12 +270,41 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
 }
 
 
+/* Set the ammo displayed on the screen */
+-(void)setAmmo:(int)ammo {
+    if (ammo >= 0 && ammo <= 5) {
+        _ammo = ammo;
+        ammoDisplay.texture =[SKTexture textureWithImageNamed:[NSString stringWithFormat:@"Ammo%d", ammo]];
+    }
+}
+
+/* Set Score */
+-(void)setScore:(int)score{
+    _score = score;
+    scoreDisplay.text = [NSString stringWithFormat:@"Score: %d", score];
+}
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     for (UITouch *touch in touches) {
-        shot = YES;
+        if (!gameOver) {
+            shot = YES;
+        }
     }
 }
+
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    for (UITouch *touch in touches) {
+        if (gameOver) {
+            SKNode *node = [menu nodeAtPoint:[touch locationInNode:menu]];
+            if ([node.name isEqualToString:@"play"]) {
+                /* Start a new game */
+                [self newGame];
+            }
+        }
+    }
+}
+
 
 -(void)didBeginContact:(SKPhysicsContact *)contact {
     SKPhysicsBody *first;
@@ -175,13 +319,43 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     
     /* Colision between the halo and the ball */
     if (first.categoryBitMask == HALO_CATEGORY && second.categoryBitMask == BALL_CATEGORY) {
-        //self.score += 10;
+        self.score++;
         [self addExplosion:first.node.position withName:@"HaloExplosion"];
-        //[self runAction:soundExplosion];
+        [self runAction:soundExplosion];
         
         //first.categoryBitMask = 0;
         [first.node removeFromParent];
         [second.node removeFromParent];
+    }
+    
+    /* Colision between the halo and the shield */
+    if (first.categoryBitMask == HALO_CATEGORY && second.categoryBitMask == SHIELD_CATEGORY) {
+        [self addExplosion:first.node.position withName:@"ShieldExplosion"];
+        [self runAction:soundExplosion];
+        
+        first.categoryBitMask = 0;
+        [first.node removeFromParent];
+        [second.node removeFromParent];
+    }
+    
+    /* Colision between the halo and the lifebar */
+    if (first.categoryBitMask == HALO_CATEGORY && second.categoryBitMask == BAR_CATEGORY) {
+        [self addExplosion:second.node.position withName:@"LifeBarExplosion"];
+        [self runAction:soundDeepExplosion];
+        [second.node removeFromParent];
+        [self gameOver];
+    }
+    
+    /* Colision between the ball and the edges */
+    if (first.categoryBitMask == BALL_CATEGORY && second.categoryBitMask == EDGE_CATEGORY) {
+        [self addExplosion:contact.contactPoint withName:@"BounceExplosion"];
+        /*if ([first.node isKindOfClass:[Ball  class]]) {
+            ((Ball *)first.node).numBounces++;
+            if (((Ball *)first.node).numBounces > 4) {
+                [first.node removeFromParent];
+            }
+        }*/
+        [self runAction:soundBounce];
     }
 }
 

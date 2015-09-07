@@ -20,6 +20,15 @@
 		4C04F5F71B9D608200BA97DC /* HaloExplosion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F51B9D608200BA97DC /* HaloExplosion.sks */; };
 		4C04F5F81B9D608200BA97DC /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F61B9D608200BA97DC /* spark.png */; };
 		4C04F5FA1B9D61A200BA97DC /* Halo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F91B9D61A200BA97DC /* Halo@2x.png */; };
+		4C04F5FC1B9D656D00BA97DC /* ShieldExplosion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5FB1B9D656D00BA97DC /* ShieldExplosion.sks */; };
+		4C04F5FE1B9D66A100BA97DC /* LifeBarExplosion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5FD1B9D66A100BA97DC /* LifeBarExplosion.sks */; };
+		4C04F6001B9D684500BA97DC /* BounceExplosion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5FF1B9D684500BA97DC /* BounceExplosion.sks */; };
+		4C04F6021B9D6D3200BA97DC /* BarExplosion.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6011B9D6D3200BA97DC /* BarExplosion.caf */; };
+		4C04F6041B9D6D3F00BA97DC /* Bounce.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6031B9D6D3F00BA97DC /* Bounce.caf */; };
+		4C04F6061B9D6D5400BA97DC /* LZSound.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6051B9D6D5400BA97DC /* LZSound.caf */; };
+		4C04F6081B9D6D6300BA97DC /* SmallExplosion.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6071B9D6D6300BA97DC /* SmallExplosion.caf */; };
+		4C04F60A1B9D6D6F00BA97DC /* ZapSound.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6091B9D6D6F00BA97DC /* ZapSound.caf */; };
+		4C04F60D1B9D6ED700BA97DC /* Menu.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04F60C1B9D6ED700BA97DC /* Menu.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +62,16 @@
 		4C04F5F51B9D608200BA97DC /* HaloExplosion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = HaloExplosion.sks; sourceTree = "<group>"; };
 		4C04F5F61B9D608200BA97DC /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
 		4C04F5F91B9D61A200BA97DC /* Halo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Halo@2x.png"; path = "space-cannon/Halo@2x.png"; sourceTree = "<group>"; };
+		4C04F5FB1B9D656D00BA97DC /* ShieldExplosion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = ShieldExplosion.sks; sourceTree = "<group>"; };
+		4C04F5FD1B9D66A100BA97DC /* LifeBarExplosion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = LifeBarExplosion.sks; sourceTree = "<group>"; };
+		4C04F5FF1B9D684500BA97DC /* BounceExplosion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = BounceExplosion.sks; sourceTree = "<group>"; };
+		4C04F6011B9D6D3200BA97DC /* BarExplosion.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = BarExplosion.caf; sourceTree = "<group>"; };
+		4C04F6031B9D6D3F00BA97DC /* Bounce.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Bounce.caf; sourceTree = "<group>"; };
+		4C04F6051B9D6D5400BA97DC /* LZSound.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LZSound.caf; sourceTree = "<group>"; };
+		4C04F6071B9D6D6300BA97DC /* SmallExplosion.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SmallExplosion.caf; sourceTree = "<group>"; };
+		4C04F6091B9D6D6F00BA97DC /* ZapSound.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = ZapSound.caf; sourceTree = "<group>"; };
+		4C04F60B1B9D6ED700BA97DC /* Menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Menu.h; sourceTree = "<group>"; };
+		4C04F60C1B9D6ED700BA97DC /* Menu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Menu.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +95,11 @@
 		4C04F5BC1B9D4E0200BA97DC = {
 			isa = PBXGroup;
 			children = (
+				4C04F6091B9D6D6F00BA97DC /* ZapSound.caf */,
+				4C04F6071B9D6D6300BA97DC /* SmallExplosion.caf */,
+				4C04F6051B9D6D5400BA97DC /* LZSound.caf */,
+				4C04F6031B9D6D3F00BA97DC /* Bounce.caf */,
+				4C04F6011B9D6D3200BA97DC /* BarExplosion.caf */,
 				4C04F5C71B9D4E0200BA97DC /* Space Cannon */,
 				4C04F5E61B9D4E0200BA97DC /* Space CannonTests */,
 				4C04F5C61B9D4E0200BA97DC /* Products */,
@@ -108,6 +132,11 @@
 				4C04F5C81B9D4E0200BA97DC /* Supporting Files */,
 				4C04F5F51B9D608200BA97DC /* HaloExplosion.sks */,
 				4C04F5F61B9D608200BA97DC /* spark.png */,
+				4C04F5FB1B9D656D00BA97DC /* ShieldExplosion.sks */,
+				4C04F5FD1B9D66A100BA97DC /* LifeBarExplosion.sks */,
+				4C04F5FF1B9D684500BA97DC /* BounceExplosion.sks */,
+				4C04F60B1B9D6ED700BA97DC /* Menu.h */,
+				4C04F60C1B9D6ED700BA97DC /* Menu.m */,
 			);
 			path = "Space Cannon";
 			sourceTree = "<group>";
@@ -219,14 +248,22 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C04F60A1B9D6D6F00BA97DC /* ZapSound.caf in Resources */,
+				4C04F6081B9D6D6300BA97DC /* SmallExplosion.caf in Resources */,
+				4C04F6061B9D6D5400BA97DC /* LZSound.caf in Resources */,
+				4C04F6041B9D6D3F00BA97DC /* Bounce.caf in Resources */,
+				4C04F6021B9D6D3200BA97DC /* BarExplosion.caf in Resources */,
 				4C04F5DE1B9D4E0200BA97DC /* LaunchScreen.xib in Resources */,
 				4C04F5DB1B9D4E0200BA97DC /* Images.xcassets in Resources */,
 				4C04F5F41B9D4E1B00BA97DC /* space-cannon in Resources */,
+				4C04F5FE1B9D66A100BA97DC /* LifeBarExplosion.sks in Resources */,
 				4C04F5F81B9D608200BA97DC /* spark.png in Resources */,
 				4C04F5FA1B9D61A200BA97DC /* Halo@2x.png in Resources */,
+				4C04F6001B9D684500BA97DC /* BounceExplosion.sks in Resources */,
 				4C04F5D31B9D4E0200BA97DC /* GameScene.sks in Resources */,
 				4C04F5D91B9D4E0200BA97DC /* Main.storyboard in Resources */,
 				4C04F5F71B9D608200BA97DC /* HaloExplosion.sks in Resources */,
+				4C04F5FC1B9D656D00BA97DC /* ShieldExplosion.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,6 +281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C04F60D1B9D6ED700BA97DC /* Menu.m in Sources */,
 				4C04F5D61B9D4E0200BA97DC /* GameViewController.m in Sources */,
 				4C04F5CE1B9D4E0200BA97DC /* AppDelegate.m in Sources */,
 				4C04F5D11B9D4E0200BA97DC /* GameScene.m in Sources */,
