@@ -32,7 +32,7 @@
 static const CGFloat SHOOT_SPEED = 1000.0f;
 static const CGFloat HALO_LOW_ANGLE = 200.0 * M_PI / 180.0;
 static const CGFloat HALO_HIGH_ANGLE = 340.0 * M_PI / 180.0;
-static const CGFloat HALO_SPEED = 250.0;
+static const CGFloat HALO_SPEED = 200.0;
 static const uint32_t HALO_CATEGORY     = 0x1;
 static const uint32_t BALL_CATEGORY     = 0x1 << 1;
 static const uint32_t EDGE_CATEGORY     = 0x1 << 2;
@@ -282,8 +282,23 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     halo.physicsBody.contactTestBitMask = BALL_CATEGORY | SHIELD_CATEGORY | BAR_CATEGORY | EDGE_CATEGORY;
     [mainLayer addChild:halo];
     
-    /* Point power up */
-    if (!gameOver && arc4random_uniform(5) == 0) {
+    /* Count the number of haloes on the frame */
+    int halosCounter = 0;
+    for(SKNode *node in mainLayer.children) {
+        if([node.name isEqualToString:@"halo"]) {
+            halosCounter++;
+        }
+    }
+    
+    /* Bomb power up will spawned when there are 5 halos
+     on the screen. else there will be a chance for the
+     point multiplier power up to be spawned */
+    if (halosCounter == 3) {
+        halo.texture = [SKTexture textureWithImageNamed:@"HaloBomb"];
+        halo.userData = [[NSMutableDictionary alloc] init];
+        [halo.userData setObject:@YES forKey:@"Bomb"];
+        
+    } else if (!gameOver && arc4random_uniform(5) == 0) {
         halo.texture = [SKTexture textureWithImageNamed:@"HaloX"];
         halo.userData = [[NSMutableDictionary alloc] init];
         [halo.userData setObject:@YES forKey:@"Multiplier"];
@@ -377,6 +392,13 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         /* Increment the pointValue var when this is a HaloX */
         if ([[first.node.userData valueForKey:@"Multiplier"] boolValue]) {
             self.pointValue++;
+        } else if ([[first.node.userData valueForKey:@"Bomb"] boolValue]) {
+            /* Make the halos explode and remove them */
+            first.node.name = nil;
+            [mainLayer enumerateChildNodesWithName:@"halo" usingBlock:^(SKNode *node, BOOL *stop) {
+                [self addExplosion:node.position withName:@"HaloExplosion"];
+                [node removeFromParent];
+            }];
         }
         
         first.categoryBitMask = 0;
@@ -388,6 +410,14 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     if (first.categoryBitMask == HALO_CATEGORY && second.categoryBitMask == SHIELD_CATEGORY) {
         [self addExplosion:first.node.position withName:@"ShieldExplosion"];
         [self runAction:soundExplosion];
+        
+        /* The shield got hit by the bomb halo, destroyed all of them */
+        if ([[first.node.userData valueForKey:@"Bomb"] boolValue]) {
+            [mainLayer enumerateChildNodesWithName:@"shield" usingBlock:^(SKNode *node, BOOL *stop) {
+                [self addExplosion:first.node.position withName:@"ShieldExplosion"];
+                [node removeFromParent];
+            }];
+        }
         
         first.categoryBitMask = 0;
         [first.node removeFromParent];
