@@ -16,6 +16,7 @@
     SKSpriteNode *cannon;
     SKSpriteNode *ammoDisplay;
     SKLabelNode *scoreDisplay;
+    SKLabelNode *pointLabel;
     SKAction *soundBounce;
     SKAction *soundDeepExplosion;
     SKAction *soundExplosion;
@@ -123,6 +124,13 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     scoreDisplay.fontSize = 20;
     [self addChild:scoreDisplay];
     
+    /* Point multiplier label */
+    pointLabel = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    pointLabel.position = CGPointMake(self.size.width / 4 + 15, 37);
+    pointLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentModeLeft;
+    pointLabel.fontSize = 20;
+    [self addChild:pointLabel];
+    
     /* Initilize sounds */
     soundBounce = [SKAction playSoundFileNamed:@"Bounce.caf" waitForCompletion:NO];
     soundDeepExplosion = [SKAction playSoundFileNamed:@"BarExplosion.caf" waitForCompletion:NO];
@@ -138,8 +146,10 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     /* Init vals */
     self.ammo = 5;
     self.score = 0;
+    self.pointValue = 1;
     gameOver = YES;
     scoreDisplay.hidden = YES;
+    pointLabel.hidden = YES;
     
     /* Loading score */
     user = [NSUserDefaults standardUserDefaults];
@@ -176,6 +186,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     }
     gameOver = YES;
     scoreDisplay.hidden = YES;
+    pointLabel.hidden = YES;
 }
 
 /* New Game */
@@ -184,9 +195,11 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     /* Set up game */
     self.ammo = 5;
     self.score = 0;
+    self.pointValue = 1;
     gameOver = NO;
     menu.hidden = YES;
     scoreDisplay.hidden = NO;
+    pointLabel.hidden = NO;
     [mainLayer removeAllChildren];
     [self actionForKey:@"haloAction"].speed = 1.0;
     
@@ -253,6 +266,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         spwnAction.speed += 0.01;
     }
     
+    /* Creating the halos */
     SKSpriteNode *halo = [SKSpriteNode spriteNodeWithImageNamed:@"Halo"];
     halo.position = CGPointMake(randomGen(halo.size.width/2, self.size.width - halo.size.width/2),
                                 self.size.height + halo.size.height/2);
@@ -267,6 +281,13 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     halo.physicsBody.collisionBitMask = EDGE_CATEGORY;
     halo.physicsBody.contactTestBitMask = BALL_CATEGORY | SHIELD_CATEGORY | BAR_CATEGORY | EDGE_CATEGORY;
     [mainLayer addChild:halo];
+    
+    /* Point power up */
+    if (!gameOver && arc4random_uniform(5) == 0) {
+        halo.texture = [SKTexture textureWithImageNamed:@"HaloX"];
+        halo.userData = [[NSMutableDictionary alloc] init];
+        [halo.userData setObject:@YES forKey:@"Multiplier"];
+    }
 }
 
 /* Add the explosion */
@@ -308,6 +329,12 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     scoreDisplay.text = [NSString stringWithFormat:@"Score: %d", score];
 }
 
+/* Set point value */
+-(void)setPointValue:(int)pointValue {
+    _pointValue = pointValue;
+    pointLabel.text = [NSString stringWithFormat:@"Points: x%d", pointValue];
+}
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     for (UITouch *touch in touches) {
@@ -343,9 +370,14 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     
     /* Colision between the halo and the ball */
     if (first.categoryBitMask == HALO_CATEGORY && second.categoryBitMask == BALL_CATEGORY) {
-        self.score++;
+        self.score += self.pointValue;
         [self addExplosion:first.node.position withName:@"HaloExplosion"];
         [self runAction:soundExplosion];
+        
+        /* Increment the pointValue var when this is a HaloX */
+        if ([[first.node.userData valueForKey:@"Multiplier"] boolValue]) {
+            self.pointValue++;
+        }
         
         first.categoryBitMask = 0;
         [first.node removeFromParent];
@@ -380,6 +412,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
             ((Ball *)first.node).numBounces++;
             if (((Ball *)first.node).numBounces > 4) {
                 [first.node removeFromParent];
+                self.pointValue = 1;
             }
         }
         [self runAction:soundBounce];
@@ -403,6 +436,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         /* Remove if needed (out of frame) */
         if (!CGRectContainsPoint(self.frame, node.position)) {
             [node removeFromParent];
+            self.pointValue = 1;
         }
     }];
     

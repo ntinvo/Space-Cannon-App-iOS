@@ -11,4 +11,5 @@
 @interface GameScene : SKScene<SKPhysicsContactDelegate>
 @property (nonatomic) int ammo;
 @property (nonatomic) int score;
+@property (nonatomic) int pointValue;
 @end
