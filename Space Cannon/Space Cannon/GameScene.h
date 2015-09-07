@@ -13,4 +13,5 @@
 @property (nonatomic) int score;
 @property (nonatomic) int pointValue;
 @property (nonatomic) BOOL multiMode;
+@property (nonatomic) BOOL gamePause;
 @end

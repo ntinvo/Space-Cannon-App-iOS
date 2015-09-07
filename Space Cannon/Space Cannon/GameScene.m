@@ -9,12 +9,15 @@
 #import "GameScene.h"
 #import "Menu.h"
 #import "Ball.h"
+#import <AVFoundation/AVFoundation.h>
 
 @implementation GameScene
 {
     SKNode *mainLayer;
     SKSpriteNode *cannon;
     SKSpriteNode *ammoDisplay;
+    SKSpriteNode *pause;
+    SKSpriteNode *resume;
     SKLabelNode *scoreDisplay;
     SKLabelNode *pointLabel;
     SKAction *soundBounce;
@@ -25,6 +28,7 @@
     SKAction *soundShieldUp;
     NSUserDefaults *user;
     NSMutableArray *shieldPool;
+    AVAudioPlayer *audioPlayer;
     Menu *menu;
     BOOL shot;
     BOOL gameOver;
@@ -145,6 +149,17 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     }
     
     
+    /* Set up pause and resume buttons */
+    pause = [SKSpriteNode spriteNodeWithImageNamed:@"PauseButton"];
+    pause.xScale = 2.0;
+    pause.yScale = 2.0;
+    pause.position = CGPointMake(720, 34);
+    [self addChild:pause];
+    
+    resume = [SKSpriteNode spriteNodeWithImageNamed:@"ResumeButton"];
+    resume.position = CGPointMake(self.size.width/2, self.size.height/2);
+    [self addChild:resume];
+    
     /* Scoring */
     scoreDisplay = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
     scoreDisplay.position = CGPointMake(self.size.width / 4 + 15, 10);
@@ -172,6 +187,19 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     [self addChild:menu];
     menu.position = CGPointMake(20, self.size.height - 200);
     
+    /* Loading music */
+    NSURL *url = [[NSBundle  mainBundle] URLForResource:@"ObservingTheStar" withExtension:@"caf"];
+    NSError *error = nil;
+    audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:&error];
+    if (!audioPlayer) {
+        NSLog(@"Error loading music: %@", error);
+    } else {
+        audioPlayer.numberOfLoops = -1;
+        audioPlayer.volume = 0.8;
+        [audioPlayer play];
+        menu.musicPlaying = YES;
+    }
+    
     /* Init vals */
     self.ammo = 5;
     self.score = 0;
@@ -179,6 +207,9 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     gameOver = YES;
     scoreDisplay.hidden = YES;
     pointLabel.hidden = YES;
+    pause.hidden = YES;
+    resume.hidden = YES;
+    
     
     /* Loading score */
     user = [NSUserDefaults standardUserDefaults];
@@ -218,7 +249,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         [node removeFromParent];
     }];
     
-    menu.hidden = NO;
+
     
     menu.score = self.score;
     if (self.score > menu.highScore) {
@@ -230,6 +261,10 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     gameOver = YES;
     scoreDisplay.hidden = YES;
     pointLabel.hidden = YES;
+    pause.hidden = YES;
+    [self runAction:[SKAction waitForDuration:1.0] completion:^{
+        [menu show];
+    }];
 }
 
 /* New Game */
@@ -242,9 +277,10 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     self.multiMode = NO;
     killCount = 0;
     gameOver = NO;
-    menu.hidden = YES;
     scoreDisplay.hidden = NO;
     pointLabel.hidden = NO;
+    pause.hidden = NO;
+    [menu hide];
     [mainLayer removeAllChildren];
     [self actionForKey:@"haloAction"].speed = 1.0;
 
@@ -440,22 +476,52 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     }
 }
 
+/* Set game paused */
+-(void)setGamePause:(BOOL)gamePause {
+    if(!gameOver) {
+        _gamePause = gamePause;
+        pause.hidden = gamePause;
+        resume.hidden = !gamePause;
+        self.paused = gamePause;
+    }
+}
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     for (UITouch *touch in touches) {
-        if (!gameOver) {
-            shot = YES;
+        if (!gameOver && !self.gamePause) {
+            if (![pause containsPoint:[touch locationInNode:pause.parent]]) {
+                shot = YES;
+            }
         }
     }
 }
 
 -(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     for (UITouch *touch in touches) {
-        if (gameOver) {
+        if (gameOver && menu.touchable) {
             SKNode *node = [menu nodeAtPoint:[touch locationInNode:menu]];
             if ([node.name isEqualToString:@"play"]) {
                 /* Start a new game */
                 [self newGame];
+            }
+            if ([node.name isEqualToString:@"Music"]) {
+                menu.musicPlaying = !menu.musicPlaying;
+                if(menu.musicPlaying) {
+                    [audioPlayer play];
+                } else {
+                    [audioPlayer stop];
+                }
+            }
+        } else if (!gameOver) {
+            if(self.gamePause) {
+                if ([resume containsPoint:[touch locationInNode:resume.parent]]) {
+                    self.gamePause = NO;
+                }
+            } else {
+                if ([pause containsPoint:[touch locationInNode:pause.parent]]) {
+                    self.gamePause = YES;
+                }
             }
         }
     }
