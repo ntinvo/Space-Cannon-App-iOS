@@ -32,6 +32,7 @@
 		4C04F6131B9D785C00BA97DC /* BallTrail.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6111B9D785C00BA97DC /* BallTrail.sks */; };
 		4C04F6141B9D785C00BA97DC /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6121B9D785C00BA97DC /* spark.png */; };
 		4C04F6171B9D7AD100BA97DC /* Ball.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04F6161B9D7AD100BA97DC /* Ball.m */; };
+		4C04F6191B9D91A800BA97DC /* ShieldUp.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F6181B9D91A800BA97DC /* ShieldUp.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		4C04F6121B9D785C00BA97DC /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
 		4C04F6151B9D7AD100BA97DC /* Ball.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ball.h; sourceTree = "<group>"; };
 		4C04F6161B9D7AD100BA97DC /* Ball.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Ball.m; sourceTree = "<group>"; };
+		4C04F6181B9D91A800BA97DC /* ShieldUp.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = ShieldUp.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +104,7 @@
 		4C04F5BC1B9D4E0200BA97DC = {
 			isa = PBXGroup;
 			children = (
+				4C04F6181B9D91A800BA97DC /* ShieldUp.caf */,
 				4C04F6091B9D6D6F00BA97DC /* ZapSound.caf */,
 				4C04F6071B9D6D6300BA97DC /* SmallExplosion.caf */,
 				4C04F6051B9D6D5400BA97DC /* LZSound.caf */,
@@ -259,6 +262,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C04F6191B9D91A800BA97DC /* ShieldUp.caf in Resources */,
 				4C04F60A1B9D6D6F00BA97DC /* ZapSound.caf in Resources */,
 				4C04F6141B9D785C00BA97DC /* spark.png in Resources */,
 				4C04F6081B9D6D6300BA97DC /* SmallExplosion.caf in Resources */,

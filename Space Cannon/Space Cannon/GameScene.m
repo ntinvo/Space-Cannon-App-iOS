@@ -22,6 +22,7 @@
     SKAction *soundExplosion;
     SKAction *soundLazer;
     SKAction *soundZap;
+    SKAction *soundShieldUp;
     NSUserDefaults *user;
     NSMutableArray *shieldPool;
     Menu *menu;
@@ -34,11 +35,12 @@ static const CGFloat SHOOT_SPEED = 1000.0f;
 static const CGFloat HALO_LOW_ANGLE = 200.0 * M_PI / 180.0;
 static const CGFloat HALO_HIGH_ANGLE = 340.0 * M_PI / 180.0;
 static const CGFloat HALO_SPEED = 200.0;
-static const uint32_t HALO_CATEGORY     = 0x1;
-static const uint32_t BALL_CATEGORY     = 0x1 << 1;
-static const uint32_t EDGE_CATEGORY     = 0x1 << 2;
-static const uint32_t SHIELD_CATEGORY   = 0x1 << 3;
-static const uint32_t BAR_CATEGORY      = 0x1 << 4;
+static const uint32_t HALO_CATEGORY         = 0x1;
+static const uint32_t BALL_CATEGORY         = 0x1 << 1;
+static const uint32_t EDGE_CATEGORY         = 0x1 << 2;
+static const uint32_t SHIELD_CATEGORY       = 0x1 << 3;
+static const uint32_t BAR_CATEGORY          = 0x1 << 4;
+static const uint32_t SHIELD_POWER_CATEGORY = 0x1 << 5;
 static NSString *const keyTopScore = @"TopScore";
 
 
@@ -106,6 +108,11 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
                                                 [SKAction performSelector:@selector(createHalo) onTarget:self]]]; /* Call createAction function to spawn the halos */
     [self runAction: [SKAction repeatActionForever:haloAction] withKey:@"haloAction"];
     
+    /* Create shield power up */
+    SKAction *spawnShielsPower = [SKAction sequence:@[[SKAction waitForDuration:10 withRange:4],
+                                                      [SKAction performSelector:@selector(spawnShieldPowerUp) onTarget:self]]];
+    [self runAction: [SKAction repeatActionForever:spawnShielsPower]];
+    
     /* Ammos */
     ammoDisplay = [SKSpriteNode spriteNodeWithImageNamed:@"Ammo5"];
     ammoDisplay.anchorPoint = CGPointMake(0.5, 0.0);
@@ -151,6 +158,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     soundExplosion = [SKAction playSoundFileNamed:@"SmallExplosion.caf" waitForCompletion:NO];
     soundLazer = [SKAction playSoundFileNamed:@"LZSound.caf" waitForCompletion:NO];
     soundZap = [SKAction playSoundFileNamed:@"ZapSound.caf" waitForCompletion:NO];
+    soundShieldUp = [SKAction playSoundFileNamed:@"ShieldUp.caf" waitForCompletion:NO];
     
     /* Menu */
     menu = [[Menu alloc] init];
@@ -187,6 +195,11 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     /* Remove the shield */
     [mainLayer enumerateChildNodesWithName:@"shield" usingBlock:^(SKNode *node, BOOL *stop) {
         [shieldPool addObject:node];
+        [node removeFromParent];
+    }];
+    
+    /* Remove shield power up */
+    [mainLayer enumerateChildNodesWithName:@"shieldPower" usingBlock:^(SKNode *node, BOOL *stop) {
         [node removeFromParent];
     }];
     
@@ -253,7 +266,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         ball.physicsBody.categoryBitMask = BALL_CATEGORY; /* Set the category bit mask */
         ball.physicsBody.collisionBitMask = EDGE_CATEGORY; /* If the ball collides with another
         // body that has a category bit mask that has the edge category set, then react to that */
-        ball.physicsBody.contactTestBitMask = EDGE_CATEGORY;
+        ball.physicsBody.contactTestBitMask = EDGE_CATEGORY | SHIELD_POWER_CATEGORY;
         [self runAction:soundLazer];
         [mainLayer addChild:ball];
         
@@ -312,6 +325,23 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         halo.texture = [SKTexture textureWithImageNamed:@"HaloX"];
         halo.userData = [[NSMutableDictionary alloc] init];
         [halo.userData setObject:@YES forKey:@"Multiplier"];
+    }
+}
+
+/* Add shield power up */
+-(void)spawnShieldPowerUp {
+    if (shieldPool.count > 0) {
+        SKSpriteNode *shieldPower = [SKSpriteNode spriteNodeWithImageNamed:@"Block"];
+        shieldPower.position = CGPointMake(self.size.width + shieldPower.size.width, randomGen(150, self.size.height - 100));
+        shieldPower.name = @"shieldPower";
+        shieldPower.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(42, 9)];
+        shieldPower.physicsBody.categoryBitMask = SHIELD_POWER_CATEGORY;
+        shieldPower.physicsBody.collisionBitMask = 0;
+        shieldPower.physicsBody.velocity = CGVectorMake(-100, randomGen(-40, 40));
+        shieldPower.physicsBody.angularVelocity = M_PI;
+        shieldPower.physicsBody.linearDamping = 0.0;
+        shieldPower.physicsBody.angularDamping = 0.0;
+        [mainLayer addChild:shieldPower];
     }
 }
 
@@ -425,7 +455,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         if ([[first.node.userData valueForKey:@"Bomb"] boolValue]) {
             [mainLayer enumerateChildNodesWithName:@"shield" usingBlock:^(SKNode *node, BOOL *stop) {
                 [self addExplosion:first.node.position withName:@"ShieldExplosion"];
-                [shieldPool addObject:first.node];
+                [shieldPool addObject:second.node];
                 [node removeFromParent];
             }];
         }
@@ -459,6 +489,19 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         }
         [self runAction:soundBounce];
     }
+    
+    
+    /* Colision between the ball and the shield power up */
+    if (first.categoryBitMask == BALL_CATEGORY && second.categoryBitMask == SHIELD_POWER_CATEGORY) {
+        if(shieldPool.count > 0) {
+            int randIndex = arc4random_uniform((int)shieldPool.count);
+            [mainLayer addChild:[shieldPool objectAtIndex:randIndex]];
+            [shieldPool removeObjectAtIndex:randIndex];
+            [self runAction:soundShieldUp];
+        }
+        [first.node removeFromParent];
+        [second.node removeFromParent];
+    }
 }
 
 /* Clean up the balls that go out off the screen */
@@ -479,6 +522,13 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         if (!CGRectContainsPoint(self.frame, node.position)) {
             [node removeFromParent];
             self.pointValue = 1;
+        }
+    }];
+    
+    /* Remove shield powe up */
+    [mainLayer enumerateChildNodesWithName:@"shieldPower" usingBlock:^(SKNode *node, BOOL *stop) {
+        if (node.position.x + node.frame.size.width < 0) {
+            [node removeFromParent];
         }
     }];
     
