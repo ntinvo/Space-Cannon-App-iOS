@@ -9,36 +9,40 @@
 #import "GameScene.h"
 
 @implementation GameScene
+{
+    SKNode *mainLayer;
+    SKSpriteNode *cannon;
+}
 
 -(void)didMoveToView:(SKView *)view {
-    /* Setup your scene here */
-    SKLabelNode *myLabel = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
+    /* Add the background node */
+    SKSpriteNode *background = [SKSpriteNode spriteNodeWithImageNamed:@"Starfield"];
+    background.position = CGPointMake(self.size.width/2, self.size.height/2);
+    background.xScale = 1.63;
+    background.yScale = 1.5;
+    background.blendMode = SKBlendModeReplace;
+    [self addChild:background];
     
-    myLabel.text = @"Hello, World!";
-    myLabel.fontSize = 45;
-    myLabel.position = CGPointMake(CGRectGetMidX(self.frame),
-                                   CGRectGetMidY(self.frame));
+    /* Add the main layer */
+    mainLayer = [[SKNode alloc] init];
+    [self addChild:mainLayer];
     
-    [self addChild:myLabel];
+    /* Add the cannon */
+    cannon = [SKSpriteNode spriteNodeWithImageNamed:@"Cannon"];
+    cannon.position = CGPointMake(self.size.width / 2, 0.0);
+    [self addChild:cannon];
+    
+    /* Create rotation for the cannon */
+    SKAction *rotate = [SKAction sequence:@[[SKAction rotateByAngle:M_PI duration:2],
+                                            [SKAction rotateByAngle:-M_PI duration:2]]];
+    [cannon runAction:[SKAction repeatActionForever:rotate]];
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     
     for (UITouch *touch in touches) {
-        CGPoint location = [touch locationInNode:self];
         
-        SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"Spaceship"];
-        
-        sprite.xScale = 0.5;
-        sprite.yScale = 0.5;
-        sprite.position = location;
-        
-        SKAction *action = [SKAction rotateByAngle:M_PI duration:1];
-        
-        [sprite runAction:[SKAction repeatActionForever:action]];
-        
-        [self addChild:sprite];
     }
 }
 

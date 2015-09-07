@@ -3,9 +3,10 @@
 //  Space CannonTests
 //
 //  Created by Tin N Vo on 9/6/15.
-//  Copyright © 2015 Tin Vo. All rights reserved.
+//  Copyright (c) 2015 Tin Vo. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
 @interface Space_CannonTests : XCTestCase
@@ -26,7 +27,7 @@
 
 - (void)testExample {
     // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
+    XCTAssert(YES, @"Pass");
 }
 
 - (void)testPerformanceExample {
