@@ -17,6 +17,9 @@
 		4C04F5DE1B9D4E0200BA97DC /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5DC1B9D4E0200BA97DC /* LaunchScreen.xib */; };
 		4C04F5EA1B9D4E0200BA97DC /* Space_CannonTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04F5E91B9D4E0200BA97DC /* Space_CannonTests.m */; };
 		4C04F5F41B9D4E1B00BA97DC /* space-cannon in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F31B9D4E1B00BA97DC /* space-cannon */; };
+		4C04F5F71B9D608200BA97DC /* HaloExplosion.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F51B9D608200BA97DC /* HaloExplosion.sks */; };
+		4C04F5F81B9D608200BA97DC /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F61B9D608200BA97DC /* spark.png */; };
+		4C04F5FA1B9D61A200BA97DC /* Halo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C04F5F91B9D61A200BA97DC /* Halo@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +50,9 @@
 		4C04F5E81B9D4E0200BA97DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4C04F5E91B9D4E0200BA97DC /* Space_CannonTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Space_CannonTests.m; sourceTree = "<group>"; };
 		4C04F5F31B9D4E1B00BA97DC /* space-cannon */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "space-cannon"; sourceTree = "<group>"; };
+		4C04F5F51B9D608200BA97DC /* HaloExplosion.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = HaloExplosion.sks; sourceTree = "<group>"; };
+		4C04F5F61B9D608200BA97DC /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
+		4C04F5F91B9D61A200BA97DC /* Halo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Halo@2x.png"; path = "space-cannon/Halo@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +106,8 @@
 				4C04F5DA1B9D4E0200BA97DC /* Images.xcassets */,
 				4C04F5DC1B9D4E0200BA97DC /* LaunchScreen.xib */,
 				4C04F5C81B9D4E0200BA97DC /* Supporting Files */,
+				4C04F5F51B9D608200BA97DC /* HaloExplosion.sks */,
+				4C04F5F61B9D608200BA97DC /* spark.png */,
 			);
 			path = "Space Cannon";
 			sourceTree = "<group>";
@@ -107,6 +115,7 @@
 		4C04F5C81B9D4E0200BA97DC /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				4C04F5F91B9D61A200BA97DC /* Halo@2x.png */,
 				4C04F5C91B9D4E0200BA97DC /* Info.plist */,
 				4C04F5CA1B9D4E0200BA97DC /* main.m */,
 			);
@@ -213,8 +222,11 @@
 				4C04F5DE1B9D4E0200BA97DC /* LaunchScreen.xib in Resources */,
 				4C04F5DB1B9D4E0200BA97DC /* Images.xcassets in Resources */,
 				4C04F5F41B9D4E1B00BA97DC /* space-cannon in Resources */,
+				4C04F5F81B9D608200BA97DC /* spark.png in Resources */,
+				4C04F5FA1B9D61A200BA97DC /* Halo@2x.png in Resources */,
 				4C04F5D31B9D4E0200BA97DC /* GameScene.sks in Resources */,
 				4C04F5D91B9D4E0200BA97DC /* Main.storyboard in Resources */,
+				4C04F5F71B9D608200BA97DC /* HaloExplosion.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
