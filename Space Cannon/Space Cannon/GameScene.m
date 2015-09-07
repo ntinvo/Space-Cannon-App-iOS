@@ -28,6 +28,7 @@
     Menu *menu;
     BOOL shot;
     BOOL gameOver;
+    int killCount;
     
 }
 
@@ -41,6 +42,7 @@ static const uint32_t EDGE_CATEGORY         = 0x1 << 2;
 static const uint32_t SHIELD_CATEGORY       = 0x1 << 3;
 static const uint32_t BAR_CATEGORY          = 0x1 << 4;
 static const uint32_t SHIELD_POWER_CATEGORY = 0x1 << 5;
+static const uint32_t MULTI_SHOT_CATEGORY   = 0x1 << 6;
 static NSString *const keyTopScore = @"TopScore";
 
 
@@ -120,10 +122,13 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     [self addChild:ammoDisplay];
     
     SKAction *ammoPlus = [SKAction sequence:@[[SKAction waitForDuration:1],
-                                              [SKAction runBlock:^{
-        self.ammo++;
+                                             [SKAction runBlock:^{
+        if(!self.multiMode) {
+            self.ammo++;
+        }
     }]]];
     [self runAction:[SKAction repeatActionForever:ammoPlus]];
+    
     
     /* Shield pool */
     shieldPool =[[NSMutableArray alloc] init];
@@ -134,7 +139,9 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         shield.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(42, 9)];
         shield.physicsBody.categoryBitMask = SHIELD_CATEGORY;
         shield.physicsBody.collisionBitMask = 0;
-        [shieldPool addObject:shield];
+        if (![shieldPool containsObject:shield]) {
+            [shieldPool addObject:shield];
+        }
     }
     
     
@@ -194,12 +201,20 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     
     /* Remove the shield */
     [mainLayer enumerateChildNodesWithName:@"shield" usingBlock:^(SKNode *node, BOOL *stop) {
-        [shieldPool addObject:node];
+        if (![shieldPool containsObject:node]) {
+            [shieldPool addObject:node];
+        }
+        
         [node removeFromParent];
     }];
     
     /* Remove shield power up */
     [mainLayer enumerateChildNodesWithName:@"shieldPower" usingBlock:^(SKNode *node, BOOL *stop) {
+        [node removeFromParent];
+    }];
+    
+    /* Remove multi-shot power up */
+    [mainLayer enumerateChildNodesWithName:@"multiShot" usingBlock:^(SKNode *node, BOOL *stop) {
         [node removeFromParent];
     }];
     
@@ -224,16 +239,21 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     self.ammo = 5;
     self.score = 0;
     self.pointValue = 1;
+    self.multiMode = NO;
+    killCount = 0;
     gameOver = NO;
     menu.hidden = YES;
     scoreDisplay.hidden = NO;
     pointLabel.hidden = NO;
     [mainLayer removeAllChildren];
     [self actionForKey:@"haloAction"].speed = 1.0;
+
     
     /* "Unpack" the shieldpool */
     while (shieldPool.count > 0) {
-        [mainLayer addChild:[shieldPool objectAtIndex:0]];
+        //if(!((SKSpriteNode *)[shieldPool objectAtIndex:0]).parent) {
+           [mainLayer addChild:[shieldPool objectAtIndex:0]];
+        //}
         [shieldPool removeObjectAtIndex:0];
     }
     
@@ -250,33 +270,31 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
 
 /* Shooting balls method */
 -(void)shoot {
-    if (self.ammo > 0) {
-        self.ammo--;
-        Ball *ball = [Ball spriteNodeWithImageNamed:@"Ball"];
-        ball.name = @"ball";
-        CGVector rotationVector = radiansToVector(cannon.zRotation);
-        ball.position = CGPointMake(cannon.position.x + cannon.size.width * 0.5 * rotationVector.dx,
+    Ball *ball = [Ball spriteNodeWithImageNamed:@"Ball"];
+    ball.name = @"ball";
+    CGVector rotationVector = radiansToVector(cannon.zRotation);
+    ball.position = CGPointMake(cannon.position.x + cannon.size.width * 0.5 * rotationVector.dx,
                                 cannon.position.y + cannon.size.width * 0.5 * rotationVector.dy);
     
-        ball.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:6.0];
-        ball.physicsBody.velocity = CGVectorMake(rotationVector.dx * SHOOT_SPEED, rotationVector.dy * SHOOT_SPEED);
-        ball.physicsBody.restitution = 1.0; /* Maintain momentum so that it will bounce off the edges */
-        ball.physicsBody.linearDamping = 0.0; /* Turn off air friction */
-        ball.physicsBody.friction = 0.0; /* Turn off friction */
-        ball.physicsBody.categoryBitMask = BALL_CATEGORY; /* Set the category bit mask */
-        ball.physicsBody.collisionBitMask = EDGE_CATEGORY; /* If the ball collides with another
-        // body that has a category bit mask that has the edge category set, then react to that */
-        ball.physicsBody.contactTestBitMask = EDGE_CATEGORY | SHIELD_POWER_CATEGORY;
-        [self runAction:soundLazer];
-        [mainLayer addChild:ball];
-        
-        /* Ball trailing */
-        NSString *trailPath = [[NSBundle mainBundle] pathForResource:@"BallTrail" ofType:@"sks"];
-        SKEmitterNode *trailBall = [NSKeyedUnarchiver unarchiveObjectWithFile:trailPath];
-        trailBall.targetNode = mainLayer;
-        [mainLayer addChild:trailBall];
-        ball.trail = trailBall;
-    }
+    ball.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:6.0];
+    ball.physicsBody.velocity = CGVectorMake(rotationVector.dx * SHOOT_SPEED, rotationVector.dy * SHOOT_SPEED);
+    ball.physicsBody.restitution = 1.0; /* Maintain momentum so that it will bounce off the edges */
+    ball.physicsBody.linearDamping = 0.0; /* Turn off air friction */
+    ball.physicsBody.friction = 0.0; /* Turn off friction */
+    ball.physicsBody.categoryBitMask = BALL_CATEGORY; /* Set the category bit mask */
+    ball.physicsBody.collisionBitMask = EDGE_CATEGORY; /* If the ball collides with another
+                                                        // body that has a category bit mask that has the edge category set, then react to that */
+    ball.physicsBody.contactTestBitMask = EDGE_CATEGORY | SHIELD_POWER_CATEGORY | MULTI_SHOT_CATEGORY;
+    [self runAction:soundLazer];
+    [mainLayer addChild:ball];
+    
+    /* Ball trailing */
+    NSString *trailPath = [[NSBundle mainBundle] pathForResource:@"BallTrail" ofType:@"sks"];
+    SKEmitterNode *trailBall = [NSKeyedUnarchiver unarchiveObjectWithFile:trailPath];
+    trailBall.targetNode = mainLayer;
+    [mainLayer addChild:trailBall];
+    ball.trail = trailBall;
+    [ball updateTrail];
 }
 
 
@@ -316,7 +334,7 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     /* Bomb power up will spawned when there are 5 halos
      on the screen. else there will be a chance for the
      point multiplier power up to be spawned */
-    if (halosCounter == 3) {
+    /*if (halosCounter == 3) {
         halo.texture = [SKTexture textureWithImageNamed:@"HaloBomb"];
         halo.userData = [[NSMutableDictionary alloc] init];
         [halo.userData setObject:@YES forKey:@"Bomb"];
@@ -325,7 +343,14 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         halo.texture = [SKTexture textureWithImageNamed:@"HaloX"];
         halo.userData = [[NSMutableDictionary alloc] init];
         [halo.userData setObject:@YES forKey:@"Multiplier"];
+    }*/
+    
+    if (!gameOver && arc4random_uniform(5) == 0) {
+        halo.texture = [SKTexture textureWithImageNamed:@"HaloX"];
+        halo.userData = [[NSMutableDictionary alloc] init];
+        [halo.userData setObject:@YES forKey:@"Multiplier"];
     }
+
 }
 
 /* Add shield power up */
@@ -343,6 +368,21 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         shieldPower.physicsBody.angularDamping = 0.0;
         [mainLayer addChild:shieldPower];
     }
+}
+
+/* Add multi shot power up */
+-(void)spawnedMultiShotPowerUp {
+    SKSpriteNode *multiShot = [SKSpriteNode spriteNodeWithImageNamed:@"MultiShotPowerUp"];
+    multiShot.name = @"multiShot";
+    multiShot.position = CGPointMake(-multiShot.size.width, randomGen(150, self.size.height - 100));
+    multiShot.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:12.0];
+    multiShot.physicsBody.categoryBitMask = MULTI_SHOT_CATEGORY;
+    multiShot.physicsBody.collisionBitMask = 0.0;
+    multiShot.physicsBody.velocity = CGVectorMake(100, randomGen(-40, 40));
+    multiShot.physicsBody.angularVelocity = M_PI;
+    multiShot.physicsBody.linearDamping = 0.0;
+    multiShot.physicsBody.angularDamping = 0.0;
+    [mainLayer addChild:multiShot];
 }
 
 /* Add the explosion */
@@ -390,6 +430,16 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
     pointLabel.text = [NSString stringWithFormat:@"Points: x%d", pointValue];
 }
 
+/* Set multi mode */
+-(void)setMultiMode:(BOOL)multiMode {
+    _multiMode = multiMode;
+    if (multiMode) {
+        cannon.texture = [SKTexture textureWithImageNamed:@"GreenCannon"];
+    } else {
+        cannon.texture = [SKTexture textureWithImageNamed:@"Cannon"];
+    }
+}
+
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     for (UITouch *touch in touches) {
@@ -434,11 +484,19 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
             self.pointValue++;
         } else if ([[first.node.userData valueForKey:@"Bomb"] boolValue]) {
             /* Make the halos explode and remove them */
-            first.node.name = nil;
+            //first.node.name = nil;
             [mainLayer enumerateChildNodesWithName:@"halo" usingBlock:^(SKNode *node, BOOL *stop) {
+                first.node.name = nil;
                 [self addExplosion:node.position withName:@"HaloExplosion"];
                 [node removeFromParent];
             }];
+        }
+        
+        /* Increment the killCount, when it hits 3
+         we will create the multi show power up */
+        killCount++;
+        if (killCount % 3 == 0) {
+            [self spawnedMultiShotPowerUp];
         }
         
         first.categoryBitMask = 0;
@@ -454,15 +512,20 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         /* The shield got hit by the bomb halo, destroyed all of them */
         if ([[first.node.userData valueForKey:@"Bomb"] boolValue]) {
             [mainLayer enumerateChildNodesWithName:@"shield" usingBlock:^(SKNode *node, BOOL *stop) {
-                [self addExplosion:first.node.position withName:@"ShieldExplosion"];
-                [shieldPool addObject:second.node];
+                //[self addExplosion:first.node.position withName:@"ShieldExplosion"];
+                //i//f (![shieldPool containsObject:second.node]) {
+                
+                //}
                 [node removeFromParent];
+                [shieldPool addObject:second.node];
             }];
         }
         
         first.categoryBitMask = 0;
         [first.node removeFromParent];
-        [shieldPool addObject:second.node];
+        if (![shieldPool containsObject:second.node]) {
+            [shieldPool addObject:second.node];
+        }
         [second.node removeFromParent];
     }
     
@@ -490,7 +553,6 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         [self runAction:soundBounce];
     }
     
-    
     /* Colision between the ball and the shield power up */
     if (first.categoryBitMask == BALL_CATEGORY && second.categoryBitMask == SHIELD_POWER_CATEGORY) {
         if(shieldPool.count > 0) {
@@ -502,12 +564,34 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         [first.node removeFromParent];
         [second.node removeFromParent];
     }
+    
+    /* Colision between the ball and the multi shot power up */
+    if (first.categoryBitMask == BALL_CATEGORY && second.categoryBitMask == MULTI_SHOT_CATEGORY) {
+        self.multiMode = YES;
+        [self runAction:soundShieldUp];
+        self.ammo = 5;
+        [first.node removeFromParent];
+        [second.node removeFromParent];
+    }
 }
 
 /* Clean up the balls that go out off the screen */
 -(void)didSimulatePhysics {
     if (shot) {
-        [self shoot];
+        if (self.ammo > 0) {
+            self.ammo--;
+            [self shoot];
+            if (self.multiMode) {
+                for (int i = 1; i < 5; i++) {
+                    [self performSelector:@selector(shoot) withObject:nil afterDelay:0.1*i];
+                }
+                
+                if (self.ammo == 0) {
+                    self.multiMode = NO;
+                    self.ammo = 5;
+                }
+            }
+        }
         shot = NO;
     }
     
@@ -525,9 +609,16 @@ static inline CGFloat randomGen(CGFloat low, CGFloat high) {
         }
     }];
     
-    /* Remove shield powe up */
+    /* Remove shield power up */
     [mainLayer enumerateChildNodesWithName:@"shieldPower" usingBlock:^(SKNode *node, BOOL *stop) {
         if (node.position.x + node.frame.size.width < 0) {
+            [node removeFromParent];
+        }
+    }];
+    
+    /* Remove multi-shot power up */
+    [mainLayer enumerateChildNodesWithName:@"multiShot" usingBlock:^(SKNode *node, BOOL *stop) {
+        if (node.position.x - node.frame.size.width > self.size.width) {
             [node removeFromParent];
         }
     }];

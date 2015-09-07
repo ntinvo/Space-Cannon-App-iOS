@@ -12,4 +12,5 @@
 @property (nonatomic) int ammo;
 @property (nonatomic) int score;
 @property (nonatomic) int pointValue;
+@property (nonatomic) BOOL multiMode;
 @end
